@@ -7,42 +7,68 @@ function getUserProfile() {
         }
         setTimeout(() => {
             resolve(userProfile);
-        }, 500);
+        }, 1000);
     });
 }
-console.log("Start");
-getUserProfile().then((x) => {
-    console.log(x.firstName);
-});
-console.log("Program End");
 
-function getPosts() {
+
+
+function getPosts(userID) {
     return new Promise((resolve, reject) => {
         let postsArray = [
             { id: 1, text: "Hello there!", userID: 5 },
             { id: 2, text: "How are you!", userID: 6 }
         ];
         setTimeout(() => {
-            resolve(postsArray);
+            let userPosts = postsArray.filter((post) => {
+                return post.userID === userID;
+            });
+            resolve(userPosts);
         }, 1000);
     });
 }
-getPosts().then((x) => {
-    console.log(x[0]);
-});
 
-function getComments() {
+function getComments(postID) {
     return new Promise((resolve, reject) => {
         let commentsArray = [
-            { id: 1, postId: 1, userId: 5, text: "Now, the weather is sunny!" },
+            { id: 1, postID: 1, userId: 5, text: "Now, the weather is sunny!" },
             { id: 2, postId: 2, userId: 6, text: "Later today, the weather will be cloudy!" }
         ];
         setTimeout(() => {
-            resolve(commentsArray);
-        }, 2000)
+            let postComments = commentsArray.filter((comment) => {
+                return comment.postID === postID;
+            })
+            resolve(postComments);
+        }, 1000)
 
     });
 }
-getComments().then((x) => {
-    console.log(x[1]);
+
+console.log("Sequential Start");
+getUserProfile().then((user) => {
+    console.log("Sequential Profile", user);
+    getPosts(user.id).then((posts) => {
+        for (const post of posts) {
+            console.log("Sequential Post", post);
+            getComments(post.id).then((comments) => {
+                console.log("Sequential Comment", comments);
+            });
+        }
+    });
 });
+
+console.log("Sequential End");
+
+console.log("Parallel Start");
+getUserProfile().then((x) => {
+    console.log("Parallel Profile", x);
+});
+
+getPosts(5).then((x) => {
+    console.log("Parallel Posts", x);
+});
+
+getComments(1).then((x) => {
+    console.log("Parallel Comments", x);
+});
+console.log("Parallel End");

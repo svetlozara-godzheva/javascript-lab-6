@@ -10,7 +10,7 @@ async function getUserProfile() {
     }
     await delay(1000);
     const currentMs = new Date().getMilliseconds();
-    if (currentMs % 2 === 0) {
+    if (currentMs % 10 === 0) {
         throw new Error("Failed to fetch user profile.");
     }
 
@@ -25,7 +25,7 @@ async function getPosts(userID) {
 
     await delay(1000);
     const currentMs = new Date().getMilliseconds();
-    if (currentMs % 2 === 0) {
+    if (currentMs % 10 === 0) {
         throw new Error("Failed to fetch posts.");
     }
 
@@ -43,7 +43,7 @@ async function getComments(postID) {
 
     await delay(1000);
     const currentMs = new Date().getMilliseconds();
-    if (currentMs % 2 === 0) {
+    if (currentMs % 10 === 0) {
         throw new Error("Failed to fetch comments.");
     }
 
@@ -89,5 +89,31 @@ try {
 } catch (error) {
     console.log(error);
 }
-
 console.log("Parallel End");
+
+async function getUserContent() {
+    try {
+        let user = await getUserProfile();
+        console.log("User profile retrieved");
+
+        let posts = await getPosts(user.id);
+        let allComments = [];
+        for (const post of posts) {
+            console.log("Posts retrieved");
+            let comments = await getComments(post.id);
+            allComments.push(comments);
+            console.log("Comments retrieved");
+        }
+
+        let results = {
+            user: user,
+            posts: posts,
+            comments: allComments
+        };
+        return results;
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+await getUserContent();

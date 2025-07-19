@@ -9,6 +9,11 @@ async function getUserProfile() {
         lastName: "Larsson"
     }
     await delay(1000);
+    const currentMs = new Date().getMilliseconds();
+    if (currentMs % 2 === 0) {
+        throw new Error("Failed to fetch user profile.");
+    }
+
     return userProfile;
 }
 
@@ -19,6 +24,10 @@ async function getPosts(userID) {
     ];
 
     await delay(1000);
+    const currentMs = new Date().getMilliseconds();
+    if (currentMs % 2 === 0) {
+        throw new Error("Failed to fetch posts.");
+    }
 
     let userPosts = postsArray.filter((post) => {
         return post.userID === userID;
@@ -33,6 +42,10 @@ async function getComments(postID) {
     ];
 
     await delay(1000);
+    const currentMs = new Date().getMilliseconds();
+    if (currentMs % 2 === 0) {
+        throw new Error("Failed to fetch comments.");
+    }
 
     let postComments = commentsArray.filter((comment) => {
         return comment.postID === postID;
@@ -41,14 +54,26 @@ async function getComments(postID) {
 }
 
 console.log("Sequential Start");
-let user = await getUserProfile();
-console.log("Sequential Profile", user);
+try {
+    let user = await getUserProfile();
+    console.log("Sequential Profile", user);
+    try {
+        let posts = await getPosts(user.id);
+        for (const post of posts) {
+            console.log("Sequential Post", post);
 
-let posts = await getPosts(user.id);
-for (const post of posts) {
-    console.log("Sequential Post", post);
-    let comments = await getComments(post.id);
-    console.log("Sequential Comment", comments);
+            try {
+                let comments = await getComments(post.id);
+                console.log("Sequential Comment", comments);
+            } catch (error) {
+                console.log("Failed to retrieve post comments!");
+            }
+        }
+    } catch (error) {
+        console.log("Failed to retrieve user posts!");
+    }
+} catch (error) {
+    console.log("Failed to retrieve an user profile!");
 }
 console.log("Sequential End");
 
@@ -56,8 +81,13 @@ console.log("Parallel Start");
 let userPromise = getUserProfile();
 let postsPromise = getPosts(5);
 let commentsPromise = getComments(1);
-let results = await Promise.all([userPromise, postsPromise, commentsPromise]);
-for (const result of results) {
-    console.log(result);
+try {
+    let results = await Promise.all([userPromise, postsPromise, commentsPromise]);
+    for (const result of results) {
+        console.log(result);
+    }
+} catch (error) {
+    console.log(error);
 }
+
 console.log("Parallel End");
